@@ -1,0 +1,15 @@
+{#- Override of Furo's sidebar/brand.html.
+
+On the index page the hero already shows the logo, so the sidebar brand is
+hidden entirely. On every other page we stack: logo -> tagline -> version.
+The "Rude" text is dropped because it's already baked into the logo artwork.
+-#}
+{%- if pagename != 'index' %}
+<a class="sidebar-brand centered" href="{{ pathto(master_doc) }}">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="{{ logo_url }}" alt="Rude"/>
+  </div>
+  <span class="sidebar-brand-text">Lint now, argue later.</span>
+  <small class="sidebar-brand-version">Version {{ release }}</small>
+</a>
+{%- endif %}

@@ -1,0 +1,137 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "rude"
+version = "0.1a2"
+description = "A fast, extensible Python linter for custom rules"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE*"]
+requires-python = ">=3.11"
+authors = [{ name = "Geoffrey Guéret", email = "geoffrey@rude.dev" }]
+keywords = ["linter", "python", "code-quality", "static-analysis", "ruff"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.scripts]
+rude = "rude.cli:cli"
+
+[project.entry-points."rude.plugins"]
+# Example: my_plugin = "my_package"
+
+[project.urls]
+Homepage = "https://github.com/rude-dev/rude"
+Documentation = "https://docs.rude.dev"
+Repository = "https://github.com/rude-dev/rude.git"
+Issues = "https://github.com/rude-dev/rude/issues"
+Changelog = "https://github.com/rude-dev/rude/blob/main/docs/changelog.md"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+python-source = "python"
+module-name = "rude._rust"
+manifest-path = "Cargo.toml"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["python", "tests"]
+cache-dir = ".cache/ruff"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]
+ignore = ["E501"]  # handled by formatter
+
+[tool.ruff.lint.per-file-ignores]
+"*.pyi" = ["E402"]
+"python/rude/providers/semantic.py" = ["E402", "I001"]
+"python/rude/rules/**" = ["RUF012"]  # node_types = {NodeType.X} is a ClassVar override pattern
+"examples/**" = ["RUF012"]  # example rules use same pattern
+"tests/**" = ["RUF012"]  # Rule subclasses in test helpers
+
+[tool.ruff.lint.isort]
+known-first-party = ["rude"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+cache_dir = ".cache/pytest"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["python", "tests"]
+strict = true
+show_error_codes = true
+cache_dir = ".cache/mypy"
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_untyped_decorators = false
+disallow_untyped_calls = false
+
+
+[tool.rude]
+
+[tool.coverage.run]
+source = ["rude"]
+omit = ["tests/*", "benches/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+    "@overload",
+]
+show_missing = true
+skip_empty = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "maturin>=1.7",
+    "mypy>=1.13",
+    "ruff>=0.9",
+    "pre-commit>=4.5.1",
+    "pytest-cov>=7.1.0",
+    "pytest-html>=4.2.0",
+]
+bench = [
+    "pytest-benchmark>=5.1",
+    "flake8>=7.0",
+    "ruff>=0.9",
+    "psutil>=5.9",
+]
+docs = [
+    "furo>=2025.12.19",
+    "myst-parser>=4.0.1",
+    "sphinx>=8.1.3",
+    "sphinx-autobuild>=2024.10.3",
+    "sphinx-autodoc-typehints>=3.0.1",
+    "sphinx-copybutton>=0.5.2",
+]
+# Example config
+# select = ["PAT", "META"]
+# ignore = ["PAT004"]
+# plugins = ["rude-django"]
+# local-rules = ["tools/rules.py"]
+
+# [tool.rude.rules.PAT004]
+# max_lines = 100

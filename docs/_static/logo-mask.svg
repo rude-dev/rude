@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 397 122" width="397" height="122">
+  <defs>
+    <mask id="rude-hl-badeendisplay-regular" maskUnits="userSpaceOnUse" x="0" y="0" width="397" height="122">
+      <rect x="0" y="0" width="397" height="122" fill="white"/>
+      <g transform="translate(9,113.0000) scale(0.148571,-0.148571)" fill="black">
+      <path d="M10 0V700H385Q458 700 504.5 697.5Q551 695 577.0 684.0Q603 673 614.0 647.0Q625 621 627.5 575.0Q630 529 630 455V320H480Q480 306 482.5 303.0Q485 300 500 300H630V0H330V300H310V0ZM330 450V540Q330 555 327.5 557.5Q325 560 310 560V450Z" transform="translate(0,0)"/>
+      <path d="M630 0H255Q182 0 135.5 2.5Q89 5 63.0 16.0Q37 27 26.0 53.0Q15 79 12.5 125.5Q10 172 10 245V700H310V320Q310 308 311.5 304.5Q313 301 320 300H330V700H630Z" transform="translate(640,0)"/>
+      <path d="M10 0V700H385Q458 700 504.5 697.5Q551 695 577.0 684.0Q603 673 614.0 647.0Q625 621 627.5 575.0Q630 529 630 455V245Q630 172 627.5 125.5Q625 79 614.0 53.0Q603 27 577.0 16.0Q551 5 505.0 2.5Q459 0 385 0ZM330 480Q330 495 327.5 497.5Q325 500 310 500V300Q325 300 327.5 302.5Q330 305 330 320Z" transform="translate(1280,0)"/>
+      <path d="M630 0H10V455Q10 529 12.5 575.0Q15 621 26.0 647.0Q37 673 63.0 684.0Q89 695 135.5 697.5Q182 700 255 700H630V520H365Q350 520 348.0 517.5Q346 515 346 500H630V320H365Q350 320 348.0 317.5Q346 315 346 300H630Z" transform="translate(1920,0)"/>
+      </g>
+    </mask>
+  </defs>
+  <rect x="0" y="0" width="397" height="122" fill="#E63946" mask="url(#rude-hl-badeendisplay-regular)"/>
+</svg>

@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="496" height="107" viewBox="0 0 469 107">
+  <g fill="none" stroke-miterlimit="10" transform="translate(60,0)">
+    <g role="graphics-object" aria-roledescription="group mark container">
+      <g transform="translate(0,0)">
+        <path aria-hidden="true" d="M0,0h0v0h0Z"/>
+        <g>
+          <g role="graphics-object" aria-roledescription="group mark container">
+            <g transform="translate(0,0)">
+              <path aria-hidden="true" d="M0,0h400v90h-400Z"/>
+              <g>
+                <g aria-hidden="true">
+                  <g transform="translate(0.5,90.5)">
+                    <path aria-hidden="true" d="M0,0h0v0h0Z" pointer-events="none"/>
+                    <g>
+                      <g pointer-events="none">
+                        <line transform="translate(0,0)" x2="0" y2="-90"
+                          stroke="rgba(127,127,127,0.25)" stroke-width="1" opacity="1"/>
+                        <line transform="translate(142.86,0)" x2="0" y2="-90"
+                          stroke="rgba(127,127,127,0.25)" stroke-width="1" opacity="1"/>
+                        <line transform="translate(285.71,0)" x2="0" y2="-90"
+                          stroke="rgba(127,127,127,0.25)" stroke-width="1" opacity="1"/>
+                      </g>
+                    </g>
+                    <path aria-hidden="true" d="" pointer-events="none" display="none"/>
+                  </g>
+                </g>
+                <g role="graphics-symbol" aria-roledescription="axis"
+                  aria-label="X-axis for a linear scale with values from 0 to 14">
+                  <g transform="translate(0.5,90.5)">
+                    <path aria-hidden="true" d="M0,0h0v0h0Z" pointer-events="none"/>
+                    <g>
+                      <g pointer-events="none">
+                        <line transform="translate(0,0)" x2="0" y2="0"
+                          stroke="rgba(127,127,127,0.25)" stroke-width="1" opacity="1"/>
+                        <line transform="translate(142.86,0)" x2="0" y2="0"
+                          stroke="rgba(127,127,127,0.25)" stroke-width="1" opacity="1"/>
+                        <line transform="translate(285.71,0)" x2="0" y2="0"
+                          stroke="rgba(127,127,127,0.25)" stroke-width="1" opacity="1"/>
+                      </g>
+                      <g pointer-events="none">
+                        <text text-anchor="middle" transform="translate(0,15)"
+                          font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                          font-size="12px" fill="#333333" opacity="1">0s</text>
+                        <text text-anchor="middle" transform="translate(142.86,15)"
+                          font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                          font-size="12px" fill="#333333" opacity="1">5s</text>
+                        <text text-anchor="middle" transform="translate(285.71,15)"
+                          font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                          font-size="12px" fill="#333333" opacity="1">10s</text>
+                      </g>
+                    </g>
+                    <path aria-hidden="true" d="" pointer-events="none" display="none"/>
+                  </g>
+                </g>
+                <g role="graphics-symbol" aria-roledescription="axis"
+                  aria-label="Y-axis for a discrete scale with 4 values: Ruff, Rude, Fixit, Flake8">
+                  <g transform="translate(0.5,0.5)">
+                    <path aria-hidden="true" d="M0,0h0v0h0Z" pointer-events="none"/>
+                    <g>
+                      <g pointer-events="none">
+                        <text text-anchor="end" transform="translate(-10,14.75)"
+                          font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                          font-size="12px" fill="#333333" opacity="1">Ruff</text>
+                        <text text-anchor="end" transform="translate(-10,37.25)"
+                          font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                          font-size="12px" font-weight="bold" fill="#333333" opacity="1">Rude</text>
+                        <text text-anchor="end" transform="translate(-10,59.75)"
+                          font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                          font-size="12px" fill="#333333" opacity="1">Fixit</text>
+                        <text text-anchor="end" transform="translate(-10,82.25)"
+                          font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                          font-size="12px" fill="#333333" opacity="1">Flake8</text>
+                      </g>
+                    </g>
+                    <path aria-hidden="true" d="" pointer-events="none" display="none"/>
+                  </g>
+                </g>
+                <g role="graphics-object" aria-roledescription="rect mark container">
+                  <path aria-label="time: 0.04s; tool: Ruff" role="graphics-symbol"
+                    aria-roledescription="bar" d="M0,4.75h2v13h-2Z" fill="#E63946"/>
+                  <path aria-label="time: 0.76s; tool: Rude" role="graphics-symbol"
+                    aria-roledescription="bar" d="M0,27.25h21.71v13h-21.71Z" fill="#E63946"/>
+                  <path aria-label="time: 7.38s; tool: Fixit" role="graphics-symbol"
+                    aria-roledescription="bar" d="M0,49.75h210.86v13h-210.86Z" fill="#E63946"/>
+                  <path aria-label="time: 12.65s; tool: Flake8" role="graphics-symbol"
+                    aria-roledescription="bar" d="M0,72.25h361.43v13h-361.43Z" fill="#E63946"/>
+                </g>
+                <g role="graphics-object" aria-roledescription="text mark container">
+                  <text aria-label="time: 0.04s; tool: Ruff" role="graphics-symbol"
+                    aria-roledescription="text mark" text-anchor="start"
+                    transform="translate(8,15.25)"
+                    font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                    font-size="12px" fill="#333333">0.04s</text>
+                  <text aria-label="time: 7.38s; tool: Fixit" role="graphics-symbol"
+                    aria-roledescription="text mark" text-anchor="start"
+                    transform="translate(216.86,60.25)"
+                    font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                    font-size="12px" fill="#333333">7.38s</text>
+                  <text aria-label="time: 12.65s; tool: Flake8" role="graphics-symbol"
+                    aria-roledescription="text mark" text-anchor="start"
+                    transform="translate(367.43,82.75)"
+                    font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                    font-size="12px" fill="#333333">12.65s</text>
+                </g>
+                <g role="graphics-object" aria-roledescription="text mark container">
+                  <text aria-label="time: 0.76s; tool: Rude" role="graphics-symbol"
+                    aria-roledescription="text mark" text-anchor="start"
+                    transform="translate(27.71,37.75)"
+                    font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif,&quot;Apple Color Emoji&quot;,&quot;Segoe UI Emoji&quot;"
+                    font-size="12px" font-weight="bold" fill="#333333">0.76s</text>
+                </g>
+              </g>
+              <path aria-hidden="true" d="" display="none"/>
+            </g>
+          </g>
+        </g>
+        <path aria-hidden="true" d="" display="none"/>
+      </g>
+    </g>
+  </g>
+</svg>

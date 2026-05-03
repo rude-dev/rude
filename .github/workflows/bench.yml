@@ -1,0 +1,71 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  bench:
+    name: Benchmark
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          python-version: "3.12"
+      - uses: bencherdev/bencher@f639b1b6030ebd80690d396b2b003c4f8a183563 # v0.6.2
+
+      - name: Build extension
+        run: |
+          uv sync --all-packages --group bench
+          uv run maturin develop --release
+
+      - name: Download benchmark corpus
+        run: uv run python benches/corpus/download.py large
+
+      # ── Rust benchmarks (Criterion) ──────────────────────────────
+      - name: Track Rust benchmarks
+        run: |
+          bencher run \
+            --project rude \
+            --token '${{ secrets.BENCHER_API_TOKEN }}' \
+            --branch main \
+            --testbed ubuntu-latest \
+            --adapter rust_criterion \
+            --threshold-measure latency \
+            --threshold-test t_test \
+            --threshold-max-sample-size 64 \
+            --threshold-upper-boundary 0.99 \
+            --thresholds-reset \
+            --err \
+            --github-actions '${{ secrets.GITHUB_TOKEN }}' \
+            "cargo bench --bench analyzer --bench grouping"
+        env:
+          PYO3_BUILD_EXTENSION_MODULE: "1"
+
+      # ── Python benchmarks (pytest-benchmark) ─────────────────────
+      - name: Track Python benchmarks
+        run: |
+          bencher run \
+            --project rude \
+            --token '${{ secrets.BENCHER_API_TOKEN }}' \
+            --branch main \
+            --testbed ubuntu-latest \
+            --adapter python_pytest \
+            --threshold-measure latency \
+            --threshold-test t_test \
+            --threshold-max-sample-size 64 \
+            --threshold-upper-boundary 0.99 \
+            --thresholds-reset \
+            --err \
+            --github-actions '${{ secrets.GITHUB_TOKEN }}' \
+            "uv run pytest benches/python/ -o 'python_files=bench_*.py' --benchmark-only --benchmark-json=output.json -q"

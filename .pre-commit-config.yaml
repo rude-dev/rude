@@ -1,0 +1,22 @@
+# Pre-commit hooks -- mirrors CI checks for fast local feedback.
+# Install: uv run pre-commit install
+# Run all: uv run pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.8
+    hooks:
+      - id: ruff-format
+        files: ^(python|tests)/
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        files: ^(python|tests)/
+
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt --check
+        language: system
+        types: [rust]
+        pass_filenames: false

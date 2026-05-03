@@ -1,0 +1,27 @@
+name: Bug Report
+description: Report a bug in rude
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal code or commands to reproduce the issue.
+      render: python
+
+  - type: textarea
+    id: version
+    attributes:
+      label: Environment
+      description: Output of `rude --version` and `python --version`.
+      render: text
+    validations:
+      required: true
