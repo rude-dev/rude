@@ -61,6 +61,7 @@ jobs:
             --branch main \
             --testbed ubuntu-latest \
             --adapter python_pytest \
+            --file output.json \
             --threshold-measure latency \
             --threshold-test t_test \
             --threshold-max-sample-size 64 \
