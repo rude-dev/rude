@@ -65,6 +65,7 @@ jobs:
             --start-point-reset \
             --testbed ubuntu-latest \
             --adapter python_pytest \
+            --file output.json \
             --err \
             --github-actions '${{ secrets.GITHUB_TOKEN }}' \
             "uv run pytest benches/python/ -o 'python_files=bench_*.py' --benchmark-only --benchmark-json=output.json -q"
