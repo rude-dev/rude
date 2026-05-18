@@ -1,8 +1,7 @@
 name: Benchmark PR
 
 on:
-  pull_request:
-    types: [opened, reopened, edited, synchronize]
+  workflow_dispatch:
 
 permissions: {}
 
@@ -15,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       checks: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: dtolnay/rust-toolchain@stable
@@ -39,15 +37,13 @@ jobs:
           bencher run \
             --project rude \
             --token '${{ secrets.BENCHER_API_TOKEN }}' \
-            --branch "$GITHUB_HEAD_REF" \
-            --start-point "$GITHUB_BASE_REF" \
-            --start-point-hash '${{ github.event.pull_request.base.sha }}' \
+            --branch '${{ github.ref_name }}' \
+            --start-point main \
             --start-point-clone-thresholds \
             --start-point-reset \
             --testbed ubuntu-latest \
             --adapter rust_criterion \
             --err \
-            --github-actions '${{ secrets.GITHUB_TOKEN }}' \
             "cargo bench --bench analyzer --bench grouping"
         env:
           PYO3_BUILD_EXTENSION_MODULE: "1"
@@ -58,14 +54,12 @@ jobs:
           bencher run \
             --project rude \
             --token '${{ secrets.BENCHER_API_TOKEN }}' \
-            --branch "$GITHUB_HEAD_REF" \
-            --start-point "$GITHUB_BASE_REF" \
-            --start-point-hash '${{ github.event.pull_request.base.sha }}' \
+            --branch '${{ github.ref_name }}' \
+            --start-point main \
             --start-point-clone-thresholds \
             --start-point-reset \
             --testbed ubuntu-latest \
             --adapter python_pytest \
             --file output.json \
             --err \
-            --github-actions '${{ secrets.GITHUB_TOKEN }}' \
             "uv run pytest benches/python/ -o 'python_files=bench_*.py' --benchmark-only --benchmark-json=output.json -q"
