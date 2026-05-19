@@ -1127,8 +1127,7 @@ impl<'a, 'f> Analyzer<'a, 'f> {
             let child_count = node.child_count() as u32;
             let first_child_kind_id = node.child(0).map_or(0, |c| c.kind_id());
             let last_child_kind_id = if child_count > 1 {
-                node.child(child_count as usize - 1)
-                    .map_or(0, |c| c.kind_id())
+                node.child(child_count - 1).map_or(0, |c| c.kind_id())
             } else {
                 first_child_kind_id
             };
