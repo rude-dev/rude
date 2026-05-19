@@ -16,7 +16,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 pyo3 = { version = "0.28", features = ["abi3-py311"] }
-rayon = "1.11"
+rayon = "1.12"
 rustc-hash = "2.1"
 tree-sitter = "0.26"
 tree-sitter-python = "0.25"
