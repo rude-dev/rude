@@ -108,7 +108,7 @@ dev = [
     "pytest>=9.0.3",
     "maturin>=1.7",
     "mypy>=2.1.0",
-    "ruff>=0.9",
+    "ruff>=0.15.13",
     "pre-commit>=4.6.0",
     "pytest-cov>=7.1.0",
     "pytest-html>=4.2.0",
@@ -116,7 +116,7 @@ dev = [
 bench = [
     "pytest-benchmark>=5.1",
     "flake8>=7.0",
-    "ruff>=0.9",
+    "ruff>=0.15.13",
     "psutil>=5.9",
 ]
 docs = [
