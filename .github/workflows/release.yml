@@ -41,6 +41,7 @@ jobs:
       - name: Verify version consistency
         env:
           TAG_REF: ${{ github.ref }}
+        shell: bash
         run: |
           TAG="${TAG_REF#refs/tags/v}"
           python3 scripts/check_version_consistency.py --tag "$TAG"
