@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="docs/_static/logo.svg" alt="Rude" width="248"/>
+  <img src="https://raw.githubusercontent.com/rude-dev/rude/main/docs/_static/logo.svg" alt="Rude" width="248"/>
 </h1>
 
 <p align="center">
@@ -17,8 +17,8 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/_static/benchmark-tier1.svg"/>
-    <img alt="Linting Django (901 files) — 10 equivalent rules, single process" src="docs/_static/benchmark-tier1.svg" width="496"/>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/rude-dev/rude/main/docs/_static/benchmark-tier1.svg"/>
+    <img alt="Linting Django (901 files) — 10 equivalent rules, single process" src="https://raw.githubusercontent.com/rude-dev/rude/main/docs/_static/benchmark-tier1.svg" width="496"/>
   </picture>
   <br/>
   <sub>Linting Django (901 files) -- 10 equivalent AST rules, single process</sub>
