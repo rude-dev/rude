@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 0.1a3 -- README image rendering on PyPI
+
+### Fixed
+- README images now render on PyPI by using absolute URLs instead of repo-relative paths.
+
 ## 0.1a2 -- Initial public release
 
 First public release of Rude.
