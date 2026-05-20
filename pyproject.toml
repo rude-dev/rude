@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "rude"
-version = "0.1a2"
+version = "0.1a3"
 description = "A fast, extensible Python linter for custom rules"
 readme = "README.md"
 license = "MIT"
