@@ -108,7 +108,7 @@ jobs:
         if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
       - run: uv run pytest -x -q
         if: matrix.python-version != '3.12' || matrix.os != 'ubuntu-latest'
-      - uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
+      - uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
         if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         with:
           files: coverage.xml
