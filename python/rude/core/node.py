@@ -8,7 +8,7 @@ and semantic helpers for Python constructs.
 from __future__ import annotations
 
 import builtins
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from typing import TYPE_CHECKING, Protocol, cast
 
 if TYPE_CHECKING:
@@ -45,15 +45,27 @@ class NodeLike(Protocol):
 
 
 class _NodeTypeMixin:
-    """Mixin providing ``is_*`` type-check properties.
+    """Mixin providing ``is_*`` type-check properties and ergonomic helpers.
 
     Both ``Node`` and ``NodeProxy`` inherit from this mixin.
-    The concrete class must expose a ``type`` property returning the
-    tree-sitter node type string.
+    Concrete classes must expose: ``type``, ``text``, ``named_children``,
+    ``child_by_field``.
     """
 
+    # Declarations provided by concrete classes (Node, NodeProxy)
     @property
-    def type(self) -> str:  # provided by concrete classes
+    def type(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def text(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def named_children(self) -> list[Node]:
+        raise NotImplementedError
+
+    def child_by_field(self, name: str) -> Node | None:
         raise NotImplementedError
 
     @property
@@ -148,6 +160,44 @@ class _NodeTypeMixin:
         inflation.
         """
         return self.type == "ERROR"
+
+    # ── Ergonomic helpers (duck-typed on concrete classes) ──
+
+    def children_of_type(self, types: str | Iterable[str]) -> list[Node]:
+        """Direct named children filtered by tree-sitter type.
+
+        Accepts a single type or an iterable of types. Distinct from ``find()``
+        (which recurses into descendants); this returns *direct* named children only.
+
+        Note: triggers ``NodeProxy`` inflation (accesses ``named_children``).
+        """
+        wanted = {types} if isinstance(types, str) else set(types)
+        return [c for c in self.named_children if c.type in wanted]
+
+    def field_text(self, name: str) -> str | None:
+        """Text of the field child, or ``None`` if the field is absent.
+
+        Note: triggers ``NodeProxy`` inflation (accesses ``child_by_field``).
+        """
+        child = self.child_by_field(name)
+        return child.text if child is not None else None
+
+    def field_of_type(self, name: str, node_type: str) -> Node | None:
+        """Field child iff its type matches ``node_type``, else ``None``.
+
+        Note: triggers ``NodeProxy`` inflation (accesses ``child_by_field``).
+        """
+        child = self.child_by_field(name)
+        return child if child is not None and child.type == node_type else None
+
+    def is_operator(self, op: str | Iterable[str]) -> bool:
+        """True if this node matches the given operator, by node type or text.
+
+        Tree-sitter Python represents some operators as a node type (``==``,
+        ``!=``, ...) and others only via text. This helper checks both transparently.
+        """
+        wanted = {op} if isinstance(op, str) else set(op)
+        return self.type in wanted or self.text in wanted
 
 
 class Node(_NodeTypeMixin):
