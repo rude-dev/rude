@@ -6,6 +6,8 @@ rules (built-in and plugin-authored). Stable API as of v0.1.0.
 
 from __future__ import annotations
 
+from typing import Any
+
 from rude.core.linter import Linter
 from rude.core.rule import LineRule, Rule
 from rude.core.types import Diagnostic
@@ -22,29 +24,55 @@ __all__ = [
 ]
 
 
-def check_source(rule_class: type[Rule] | type[LineRule], source: str) -> list[Diagnostic]:
+def check_source(
+    rule_class: type[Rule] | type[LineRule],
+    source: str,
+    *,
+    options: dict[str, Any] | None = None,
+    filename: str = "<test>",
+) -> list[Diagnostic]:
     """Check source code with a single rule and return diagnostics."""
+    rule = rule_class()
+    if options is not None:
+        rule.configure(options)
     linter = Linter()
-    linter.register(rule_class())
-    return list(linter.check_source(source))
+    linter.register(rule)
+    return list(linter.check_source(source, filename=filename))
 
 
-def check_codes(rule_class: type[Rule] | type[LineRule], source: str) -> list[str]:
+def check_codes(
+    rule_class: type[Rule] | type[LineRule],
+    source: str,
+    *,
+    options: dict[str, Any] | None = None,
+    filename: str = "<test>",
+) -> list[str]:
     """Return list of diagnostic codes from checking source."""
-    return [d.code for d in check_source(rule_class, source)]
+    return [d.code for d in check_source(rule_class, source, options=options, filename=filename)]
 
 
-def assert_no_errors(rule_class: type[Rule] | type[LineRule], source: str) -> None:
+def assert_no_errors(
+    rule_class: type[Rule] | type[LineRule],
+    source: str,
+    *,
+    options: dict[str, Any] | None = None,
+    filename: str = "<test>",
+) -> None:
     """Assert that the rule produces no diagnostics for the source."""
-    diagnostics = check_source(rule_class, source)
+    diagnostics = check_source(rule_class, source, options=options, filename=filename)
     assert diagnostics == [], f"Expected no errors but got: {diagnostics}"
 
 
 def assert_error(
-    rule_class: type[Rule] | type[LineRule], source: str, expected_code: str | None = None
+    rule_class: type[Rule] | type[LineRule],
+    source: str,
+    expected_code: str | None = None,
+    *,
+    options: dict[str, Any] | None = None,
+    filename: str = "<test>",
 ) -> list[Diagnostic]:
     """Assert that the rule produces at least one error."""
-    diagnostics = check_source(rule_class, source)
+    diagnostics = check_source(rule_class, source, options=options, filename=filename)
     assert len(diagnostics) > 0, "Expected errors but got none"
     if expected_code:
         codes = [d.code for d in diagnostics]
@@ -53,10 +81,15 @@ def assert_error(
 
 
 def assert_error_count(
-    rule_class: type[Rule] | type[LineRule], source: str, count: int
+    rule_class: type[Rule] | type[LineRule],
+    source: str,
+    count: int,
+    *,
+    options: dict[str, Any] | None = None,
+    filename: str = "<test>",
 ) -> list[Diagnostic]:
     """Assert that the rule produces exactly count errors."""
-    diagnostics = check_source(rule_class, source)
+    diagnostics = check_source(rule_class, source, options=options, filename=filename)
     assert len(diagnostics) == count, (
         f"Expected {count} errors but got {len(diagnostics)}: {diagnostics}"
     )
@@ -64,27 +97,45 @@ def assert_error_count(
 
 
 def fix_source(
-    rule_class: type[Rule] | type[LineRule], source: str
+    rule_class: type[Rule] | type[LineRule],
+    source: str,
+    *,
+    options: dict[str, Any] | None = None,
+    filename: str = "<test>",
 ) -> tuple[list[Diagnostic], str | None]:
     """Check and fix source with a single rule. Returns (diagnostics, fixed_source)."""
+    rule = rule_class()
+    if options is not None:
+        rule.configure(options)
     linter = Linter()
-    linter.register(rule_class())
-    diagnostics, result = linter.fix_source(source)
+    linter.register(rule)
+    diagnostics, result = linter.fix_source(source, filename=filename)
     return diagnostics, result.source if result else None
 
 
 def assert_fix(
-    rule_class: type[Rule] | type[LineRule], source: str, expected: str
+    rule_class: type[Rule] | type[LineRule],
+    source: str,
+    expected: str,
+    *,
+    options: dict[str, Any] | None = None,
+    filename: str = "<test>",
 ) -> list[Diagnostic]:
     """Assert that fixing source produces expected output."""
-    diagnostics, fixed = fix_source(rule_class, source)
+    diagnostics, fixed = fix_source(rule_class, source, options=options, filename=filename)
     assert fixed is not None, "Expected a fix but got None"
     assert fixed == expected, f"Fix mismatch:\n  got:      {fixed!r}\n  expected: {expected!r}"
     return diagnostics
 
 
-def assert_no_fix(rule_class: type[Rule] | type[LineRule], source: str) -> list[Diagnostic]:
+def assert_no_fix(
+    rule_class: type[Rule] | type[LineRule],
+    source: str,
+    *,
+    options: dict[str, Any] | None = None,
+    filename: str = "<test>",
+) -> list[Diagnostic]:
     """Assert that no fix is produced (rule has no autofix for this case)."""
-    diagnostics, fixed = fix_source(rule_class, source)
+    diagnostics, fixed = fix_source(rule_class, source, options=options, filename=filename)
     assert fixed is None, f"Expected no fix but got: {fixed!r}"
     return diagnostics
