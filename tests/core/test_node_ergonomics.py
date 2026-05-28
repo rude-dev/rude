@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from rude.core.node import Node
+import pytest
+
+from rude.core.node import Node, _NodeTypeMixin
 from rude.core.node_types import NodeType
 from rude.core.parser import parse_string
 from rude.core.types import FileContext
@@ -171,3 +173,31 @@ class TestIsOperator:
 
         assert not ident.is_operator("==")
         assert not ident.is_operator(("==", "!="))
+
+
+class TestAbstractDeclarations:
+    """The bare ``_NodeTypeMixin`` declares ``type``, ``text``, ``named_children``
+    and ``child_by_field`` as defensive stubs that raise ``NotImplementedError``.
+    Concrete classes (Node, NodeProxy) must override them. These tests assert
+    the documented contract.
+    """
+
+    def test_type_raises(self):
+        m = _NodeTypeMixin()
+        with pytest.raises(NotImplementedError):
+            _ = m.type
+
+    def test_text_raises(self):
+        m = _NodeTypeMixin()
+        with pytest.raises(NotImplementedError):
+            _ = m.text
+
+    def test_named_children_raises(self):
+        m = _NodeTypeMixin()
+        with pytest.raises(NotImplementedError):
+            _ = m.named_children
+
+    def test_child_by_field_raises(self):
+        m = _NodeTypeMixin()
+        with pytest.raises(NotImplementedError):
+            m.child_by_field("name")
