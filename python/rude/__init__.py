@@ -68,6 +68,11 @@ from rude.providers import (
     ScopeProvider,
     ScopeType,
 )
+from rude.utils import (
+    ImportAlias,
+    extract_string_content,
+    iter_import_aliases,
+)
 
 __all__ = [
     "Binding",
@@ -78,6 +83,7 @@ __all__ = [
     "FileContext",
     "Fix",
     "FixResult",
+    "ImportAlias",
     "LineRule",
     # Core
     "Linter",
@@ -96,7 +102,10 @@ __all__ = [
     "Severity",
     "__version__",
     "discover_rules",
+    # Utils
+    "extract_string_content",
     "find_python_files",
+    "iter_import_aliases",
     "load_config",
     "parse",
     "parse_file",

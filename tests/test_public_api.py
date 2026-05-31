@@ -58,6 +58,15 @@ def test_top_level_classes_are_importable_from_rude() -> None:
     assert isinstance(FixResult, type)
 
 
+def test_utils_helpers_are_importable_from_rude() -> None:
+    """Frequently used utils helpers must be exposed at the top level."""
+    from rude import ImportAlias, extract_string_content, iter_import_aliases
+
+    assert callable(extract_string_content)
+    assert callable(iter_import_aliases)
+    assert ImportAlias._fields == ("full_name", "alias", "is_from")
+
+
 def test_scope_constants_re_exported_from_providers_semantic() -> None:
     """All four scope constants must be importable via the providers path."""
     from rude.providers.semantic import (

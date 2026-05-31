@@ -201,3 +201,77 @@ class TestAbstractDeclarations:
         m = _NodeTypeMixin()
         with pytest.raises(NotImplementedError):
             m.child_by_field("name")
+
+
+class TestDocstring:
+    """Tests for Node.docstring(): extract docstring text from module/function/class."""
+
+    def test_module_docstring(self):
+        source = '"""mod doc"""\n'
+        ctx = make_context(source)
+        root = Node(ctx.tree.root_node, ctx)
+
+        assert root.docstring() == "mod doc"
+
+    def test_function_docstring(self):
+        source = 'def f():\n    """func doc"""\n    pass\n'
+        ctx = make_context(source)
+        root = Node(ctx.tree.root_node, ctx)
+        func = root.find_first("function_definition")
+        assert func is not None
+
+        assert func.docstring() == "func doc"
+
+    def test_class_docstring(self):
+        source = 'class C:\n    """cls doc"""\n    pass\n'
+        ctx = make_context(source)
+        root = Node(ctx.tree.root_node, ctx)
+        cls = root.find_first("class_definition")
+        assert cls is not None
+
+        assert cls.docstring() == "cls doc"
+
+    def test_returns_none_when_no_docstring(self):
+        source = "def f():\n    pass\n"
+        ctx = make_context(source)
+        root = Node(ctx.tree.root_node, ctx)
+        func = root.find_first("function_definition")
+        assert func is not None
+
+        assert func.docstring() is None
+
+    def test_returns_none_for_non_eligible_node(self):
+        source = "x = 1\n"
+        ctx = make_context(source)
+        root = Node(ctx.tree.root_node, ctx)
+        ident = root.find_first("identifier")
+        assert ident is not None
+
+        assert ident.docstring() is None
+
+    def test_triple_single_quote_docstring(self):
+        source = "def f():\n    '''triple single'''\n    pass\n"
+        ctx = make_context(source)
+        root = Node(ctx.tree.root_node, ctx)
+        func = root.find_first("function_definition")
+        assert func is not None
+
+        assert func.docstring() == "triple single"
+
+    def test_skips_leading_comment(self):
+        source = 'def f():\n    # leading\n    """real doc"""\n'
+        ctx = make_context(source)
+        root = Node(ctx.tree.root_node, ctx)
+        func = root.find_first("function_definition")
+        assert func is not None
+
+        assert func.docstring() == "real doc"
+
+    def test_returns_none_when_first_statement_is_not_string(self):
+        source = "def f():\n    x = 1\n"
+        ctx = make_context(source)
+        root = Node(ctx.tree.root_node, ctx)
+        func = root.find_first("function_definition")
+        assert func is not None
+
+        assert func.docstring() is None

@@ -5,9 +5,78 @@ from __future__ import annotations
 import contextlib
 import os
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
+from typing import TYPE_CHECKING, NamedTuple
 
 from rude._rust import find_comment_start as find_comment_start
+
+if TYPE_CHECKING:
+    from rude.core.node import Node
+
+
+class ImportAlias(NamedTuple):
+    """A single import alias extracted from an import statement."""
+
+    full_name: str
+    alias: str | None
+    is_from: bool
+
+
+def iter_import_aliases(node: Node) -> Iterator[ImportAlias]:
+    """Yield an ``ImportAlias`` for each alias in an import statement.
+
+    Handles plain imports, from-imports, and ``__future__`` imports transparently.
+    For non-import nodes, yields nothing.
+    """
+    if node.type == "import_statement":
+        children = list(node.named_children)
+        module: str | None = None
+        is_from = False
+    elif node.type == "future_import_statement":
+        children = list(node.named_children)
+        module = "__future__"
+        is_from = True
+    elif node.type == "import_from_statement":
+        children = list(node.named_children)
+        if not children:
+            return
+        first = children[0]
+        if first.type == "dotted_name":
+            module = first.text
+            children = children[1:]
+        elif first.type == "relative_import":
+            prefix = ""
+            mod_inside: str | None = None
+            for rc in first.children:
+                if rc.type == "import_prefix":
+                    prefix = rc.text
+                elif rc.type == "dotted_name":
+                    mod_inside = rc.text
+            module = prefix + (mod_inside or "")
+            children = children[1:]
+        else:
+            return
+        is_from = True
+    else:
+        return
+
+    def _full(name: str) -> str:
+        if not module:
+            return name
+        sep = "" if module.endswith(".") else "."
+        return f"{module}{sep}{name}"
+
+    for c in children:
+        if c.type == "dotted_name":
+            yield ImportAlias(_full(c.text), None, is_from)
+        elif c.type == "aliased_import":
+            name_node = c.child_by_field("name")
+            alias_node = c.child_by_field("alias")
+            if name_node is None:
+                continue
+            alias = alias_node.text if alias_node else None
+            yield ImportAlias(_full(name_node.text), alias, is_from)
 
 
 def atomic_write_text(path: Path, content: str, encoding: str = "utf-8") -> None:
