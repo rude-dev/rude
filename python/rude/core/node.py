@@ -11,6 +11,8 @@ import builtins
 from collections.abc import Callable, Iterable, Iterator
 from typing import TYPE_CHECKING, Protocol, cast
 
+from rude.utils import extract_string_content
+
 if TYPE_CHECKING:
     from rude._rust import NodeEntry, TSNode
     from rude.core.types import FileContext, Location, MetadataProviderT
@@ -198,6 +200,37 @@ class _NodeTypeMixin:
         """
         wanted = {op} if isinstance(op, str) else set(op)
         return self.type in wanted or self.text in wanted
+
+    def docstring(self) -> str | None:
+        """Docstring text of this node (module, function, or class), or ``None``.
+
+        Returns the inner content of the first string literal in the body,
+        without quotes. Returns ``None`` if no docstring is present or if this
+        is not a module/function/class node. Leading comments are skipped.
+
+        Note: triggers ``NodeProxy`` inflation (accesses ``named_children``
+        and ``child_by_field``).
+        """
+        if self.type == "module":
+            candidates = self.named_children
+        elif self.type in ("function_definition", "class_definition"):
+            body = self.child_by_field("body")
+            if body is None:
+                return None
+            candidates = body.named_children
+        else:
+            return None
+
+        for c in candidates:
+            if c.type == "comment":
+                continue
+            if c.type != "expression_statement":
+                return None
+            inner = c.named_children
+            if not inner or inner[0].type != "string":
+                return None
+            return extract_string_content(inner[0].text)
+        return None
 
 
 class Node(_NodeTypeMixin):
