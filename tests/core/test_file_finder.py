@@ -303,6 +303,20 @@ class TestFindPythonFilesGitignore:
         assert "kept.py" in names
         assert "skipped.py" not in names
 
+    def test_respects_nested_gitignore(self, tmp_path: Path) -> None:
+        """A .gitignore in a subdirectory excludes files within that subdirectory."""
+        (tmp_path / "keep.py").write_text("pass")
+        sub = tmp_path / "sub"
+        sub.mkdir()
+        (sub / ".gitignore").write_text("ignored.py\n")
+        (sub / "ignored.py").write_text("pass")
+        (sub / "keep2.py").write_text("pass")
+
+        result = list(find_python_files(tmp_path))
+        names = {p.name for p in result}
+
+        assert names == {"keep.py", "keep2.py"}
+
 
 class TestGitIgnore:
     """Tests for the _GitIgnore pattern matcher."""
