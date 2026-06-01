@@ -300,6 +300,24 @@ s = "%z" % 1
             "F509",
         )
 
+    def test_raw_string_unsupported_character(self):
+        assert_error(
+            PercentFormatUnsupportedCharacter,
+            """
+s = r"%z" % 1
+""",
+            "F509",
+        )
+
+    def test_triple_quoted_raw_unsupported_character(self):
+        assert_error(
+            PercentFormatUnsupportedCharacter,
+            '''
+s = r"""%z""" % 1
+''',
+            "F509",
+        )
+
 
 class TestPercentFormatExtraNamedArguments:
     """Tests for F504: unused named arguments."""
@@ -338,6 +356,15 @@ s = "%(a)s %(b)s" % {"a": 1, "b": 2}
             PercentFormatMissingArgument,
             """
 s = "%(a)s %(b)s" % {"a": 1}
+""",
+            "F505",
+        )
+
+    def test_bytes_string_missing_named_arg(self):
+        assert_error(
+            PercentFormatMissingArgument,
+            """
+s = b"%(a)s" % {}
 """,
             "F505",
         )

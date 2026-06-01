@@ -214,16 +214,19 @@ def parse_percent_format(fmt: str) -> tuple[list[PercentField], str | None]:
 
 
 def _get_string_value(node: Node) -> str | None:
-    """Extract the string value from a string literal node."""
+    """Extract the string value from a string literal node, stripping any prefix."""
     text = node.text
     if not text:
         return None
-    if text.startswith('"""') or text.startswith("'''"):
-        return text[3:-3]
-    elif text.startswith('"') or text.startswith("'"):
-        return text[1:-1]
-    elif text.startswith('f"') or text.startswith("f'"):
-        return text[2:-1]
+    # Strip string prefix characters (b, r, u, f, t and uppercase, plus combinations)
+    i = 0
+    while i < len(text) and text[i] in "bBrRuUfFtT":
+        i += 1
+    inner = text[i:]
+    if inner.startswith('"""') or inner.startswith("'''"):
+        return inner[3:-3]
+    if inner.startswith('"') or inner.startswith("'"):
+        return inner[1:-1]
     return None
 
 
