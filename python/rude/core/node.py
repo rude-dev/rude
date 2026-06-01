@@ -317,7 +317,7 @@ class Node(_NodeTypeMixin):
         if "location" not in self._cache:
             from rude.core.types import Location
 
-            self._cache["location"] = Location.from_ts_node(self._node)
+            self._cache["location"] = Location.from_ts_node(self._node, self._ctx.source)
         return cast("Location", self._cache["location"])
 
     # ─────────────────────────────────────────────────────────────────────────

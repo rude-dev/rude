@@ -27,6 +27,14 @@ class Severity(Enum):
     HINT = "hint"
 
 
+def _byte_col_to_char_col(source: bytes, row: int, byte_col: int) -> int:
+    """Convert a tree-sitter byte column to a character column on the given row."""
+    lines = source.splitlines(keepends=True)
+    if row >= len(lines):
+        return byte_col  # pragma: no cover
+    return len(lines[row][:byte_col].decode("utf-8", errors="replace"))
+
+
 @dataclass(frozen=True, slots=True)
 class Location:
     """Source code location (LSP compatible: line 1-indexed, column 0-indexed)."""
@@ -37,12 +45,12 @@ class Location:
     end_column: int | None = None
 
     @classmethod
-    def from_ts_node(cls, node: TSNode) -> Location:
+    def from_ts_node(cls, node: TSNode, source: bytes) -> Location:
         return cls(
             line=node.start_point[0] + 1,
-            column=node.start_point[1],
+            column=_byte_col_to_char_col(source, node.start_point[0], node.start_point[1]),
             end_line=node.end_point[0] + 1,
-            end_column=node.end_point[1],
+            end_column=_byte_col_to_char_col(source, node.end_point[0], node.end_point[1]),
         )
 
     def __str__(self) -> str:
