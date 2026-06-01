@@ -141,3 +141,19 @@ class TestWalk:
             assert node.column >= 0
             # Text should be extractable
             assert isinstance(node.text, str)
+
+
+class TestLocationColumns:
+    """Columns are character offsets (LSP convention), not byte offsets."""
+
+    def test_column_is_character_offset_on_utf8_line(self):
+        # "café = 1": `1` is at character column 7, byte column 8 (é = 2 UTF-8 bytes).
+        source = "café = 1\n"
+        ctx = make_context(source)
+        root = Node(ctx.tree.root_node, ctx)
+        assignment = root.find_first("assignment")
+        assert assignment is not None
+        right = assignment.child_by_field("right")
+        assert right is not None
+
+        assert right.location.column == 7
