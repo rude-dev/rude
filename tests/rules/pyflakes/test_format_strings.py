@@ -233,6 +233,23 @@ s = "%s" % (1, 2, 3)
             "F507",
         )
 
+    def test_non_literal_tuple_rhs_no_false_positive(self):
+        assert_no_errors(
+            PercentFormatPositionalCountMismatch,
+            """
+data = (1, 2)
+s = "%s %s" % data
+""",
+        )
+
+    def test_star_width_no_false_positive(self):
+        assert_no_errors(
+            PercentFormatPositionalCountMismatch,
+            """
+s = "%*d" % (10, 42)
+""",
+        )
+
 
 class TestPercentFormatMixedPositionalAndNamed:
     """Tests for F506: mixing positional and named placeholders."""

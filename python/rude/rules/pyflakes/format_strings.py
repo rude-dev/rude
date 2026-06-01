@@ -827,23 +827,18 @@ class PercentFormatPositionalCountMismatch(Rule):
         if any(f.key is not None for f in fields):
             return
 
-        expected = len(fields)
-
-        # Get right side
-        right = node.child_by_field("right")
-        if not right:
+        # Skip if any field uses `*` for width/precision: argument count is dynamic.
+        if any(f.width == "*" or f.precision == "*" for f in fields):
             return
 
-        # Count arguments
-        found = 0
-        if right.type == "tuple":
-            found = len(list(right.named_children))
-        elif right.type == "parenthesized_expression":
-            # Single value in parens
-            found = 1
-        else:
-            # Single value
-            found = 1
+        # Pyflakes only checks F507 against a tuple literal RHS; a variable
+        # cannot be counted statically without speculating about runtime values.
+        right = node.child_by_field("right")
+        if not right or right.type != "tuple":
+            return
+
+        expected = len(fields)
+        found = len(list(right.named_children))
 
         if expected != found:
             yield self.diagnostic(
