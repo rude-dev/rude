@@ -8,8 +8,9 @@ from rude.rules.pycodestyle import (
     LambdaAssignment,
     MultipleStatementsOnOneLineColon,
     MultipleStatementsOnOneLineDef,
+    StatementEndsWithSemicolon,
 )
-from tests.conftest import check_source
+from tests.conftest import check_source, fix_source
 
 
 class TestMultipleStatementsOnOneLineColon:
@@ -140,3 +141,15 @@ class TestAmbiguousFunctionName:
     pass"""
         diagnostics = check_source(AmbiguousFunctionName, source)
         assert len(diagnostics) == 0
+
+
+class TestStatementEndsWithSemicolon:
+    """Tests for E703: statement ends with a semicolon."""
+
+    def test_autofix_preserves_utf8_string(self):
+        source = 'x = "café";\n'
+        expected = 'x = "café"\n'
+
+        _, fixed = fix_source(StatementEndsWithSemicolon, source)
+
+        assert fixed == expected, f"autofix corrupted UTF-8: got {fixed!r}"

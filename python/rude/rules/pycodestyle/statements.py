@@ -163,8 +163,10 @@ class StatementEndsWithSemicolon(Rule):
                 if not code_part.endswith(";"):
                     continue
             semi_col = len(stripped) - 1
+            # Edit offsets are in bytes; len(stripped) is a char count, so encode
+            # the line to find the trailing ';' on non-ASCII lines (e.g. "café;").
             line_start = ctx.line_start_byte(lineno)
-            semi_byte = line_start + semi_col
+            semi_byte = line_start + len(stripped.encode("utf-8")) - 1
             fix = Fix(
                 description="Remove trailing semicolon",
                 edits=(Edit(semi_byte, semi_byte + 1, ""),),
