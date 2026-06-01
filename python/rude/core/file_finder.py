@@ -50,7 +50,7 @@ def _matches_any(gitignores: list[_GitIgnore], path: Path, *, is_dir: bool) -> b
     for gi in gitignores:
         try:
             rel = str(path.relative_to(gi._root))
-        except ValueError:
+        except ValueError:  # pragma: no cover
             continue
         if is_dir:
             rel = rel + "/"
