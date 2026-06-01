@@ -38,11 +38,40 @@ ALWAYS_SKIP: frozenset[str] = frozenset(
 def find_python_files(root: Path | str, *, respect_gitignore: bool = True) -> Iterator[Path]:
     """Find all Python files under root directory."""
     root = Path(root).resolve()
-    gitignore = _load_gitignore(root) if respect_gitignore else None
-    yield from _scan_directory(root, root, gitignore)
+    gitignores: list[_GitIgnore] = []
+    if respect_gitignore:
+        local = _load_gitignore(root)
+        if local is not None:
+            gitignores.append(local)
+    yield from _scan_directory(root, root, gitignores, respect_gitignore=respect_gitignore)
 
 
-def _scan_directory(directory: Path, root: Path, gitignore: _GitIgnore | None) -> Iterator[Path]:
+def _matches_any(gitignores: list[_GitIgnore], path: Path, *, is_dir: bool) -> bool:
+    for gi in gitignores:
+        try:
+            rel = str(path.relative_to(gi._root))
+        except ValueError:
+            continue
+        if is_dir:
+            rel = rel + "/"
+        if gi.match(rel):
+            return True
+    return False
+
+
+def _scan_directory(
+    directory: Path,
+    root: Path,
+    gitignores: list[_GitIgnore],
+    *,
+    respect_gitignore: bool,
+) -> Iterator[Path]:
+    # Nested .gitignore: load the local one for this directory (root already loaded).
+    if respect_gitignore and directory != root:
+        local = _load_gitignore(directory)
+        if local is not None:
+            gitignores = [*gitignores, local]
+
     try:
         with os.scandir(directory) as entries:
             dirs: list[os.DirEntry[str]] = []
@@ -54,7 +83,7 @@ def _scan_directory(directory: Path, root: Path, gitignore: _GitIgnore | None) -
                 if not entry.name.endswith(".py"):
                     continue
                 path = Path(entry.path)
-                if gitignore and gitignore.match(str(path.relative_to(root))):
+                if _matches_any(gitignores, path, is_dir=False):
                     continue
                 yield path
 
@@ -64,11 +93,12 @@ def _scan_directory(directory: Path, root: Path, gitignore: _GitIgnore | None) -
                     continue
                 if any(fnmatch(name, p) for p in ALWAYS_SKIP if "*" in p):
                     continue
-                if gitignore:
-                    rel = str(Path(entry.path).relative_to(root)) + "/"
-                    if gitignore.match(rel):
-                        continue
-                yield from _scan_directory(Path(entry.path), root, gitignore)
+                dir_path = Path(entry.path)
+                if _matches_any(gitignores, dir_path, is_dir=True):
+                    continue
+                yield from _scan_directory(
+                    dir_path, root, gitignores, respect_gitignore=respect_gitignore
+                )
     except PermissionError:
         pass
 
