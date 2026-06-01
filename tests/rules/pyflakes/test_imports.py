@@ -314,6 +314,16 @@ __all__ = ["os"]
 """,
         )
 
+    def test_all_reexport_with_r_prefix_ok(self):
+        """Import listed in __all__ with a r/b/f-prefixed string should not trigger F401."""
+        assert_no_errors(
+            UnusedImport,
+            """
+import os
+__all__ = [r"os"]
+""",
+        )
+
     def test_underscore_alias_ok(self):
         """Import aliased with underscore prefix should not trigger F401."""
         assert_no_errors(

@@ -1581,8 +1581,9 @@ impl<'a, 'f> Analyzer<'a, 'f> {
             for child in node.named_children(&mut cursor) {
                 if child.kind_id() == nk.string {
                     let text = self.get_node_text(child);
-                    // Strip quotes: "name" / 'name' / """name""" / '''name'''
-                    let s = text.trim_start_matches(['"', '\'']);
+                    // Strip optional string prefix (b/B/r/R/u/U/f/F) then quotes.
+                    let s = text
+                        .trim_start_matches(['b', 'B', 'r', 'R', 'u', 'U', 'f', 'F', '"', '\'']);
                     let s = s.trim_end_matches(['"', '\'']);
                     if !s.is_empty() {
                         self.dunder_all_names.insert(s.to_string());
