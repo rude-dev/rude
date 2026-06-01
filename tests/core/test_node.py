@@ -157,3 +157,16 @@ class TestLocationColumns:
         assert right is not None
 
         assert right.location.column == 7
+
+
+class TestFileContext:
+    """Behavioural guards for FileContext."""
+
+    def test_lines_do_not_split_on_form_feed(self):
+        # bytes.splitlines() must not split on \f, unlike str.splitlines(),
+        # otherwise ctx.lines desyncs with tree-sitter (\n/\r only).
+        source_bytes = b"x\x0cy\n"
+        tree = parse_string(source_bytes.decode("utf-8"))
+        ctx = FileContext(path=Path("<test>"), source=source_bytes, tree=tree)
+
+        assert len(ctx.lines) == 1
