@@ -92,6 +92,16 @@ class TestMissingWhitespaceAfterComma:
         diagnostics = check_source(MissingWhitespaceAfterComma, source)
         assert len(diagnostics) == 0
 
+    def test_no_space_after_dict_colon(self):
+        source = "{1:2}"
+        diagnostics = check_source(MissingWhitespaceAfterComma, source)
+        assert any(d.code == "E231" for d in diagnostics)
+
+    def test_no_space_after_annotation_colon(self):
+        source = "def f(x:int): pass"
+        diagnostics = check_source(MissingWhitespaceAfterComma, source)
+        assert any(d.code == "E231" for d in diagnostics)
+
 
 class TestUnexpectedSpacesAroundKeywordEquals:
     """Tests for E251: unexpected spaces around keyword / parameter equals."""

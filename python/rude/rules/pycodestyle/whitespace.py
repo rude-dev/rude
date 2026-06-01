@@ -235,11 +235,12 @@ class MissingWhitespaceAfterComma(Rule):
         NodeType.LIST,
         NodeType.DICTIONARY,
         NodeType.PAIR,
+        NodeType.TYPED_PARAMETER,
     }
 
     def check(self, node: Node) -> Iterator[Diagnostic]:
         for child in node.children:
-            if child.type == ",":
+            if child.type in (",", ":"):
                 next_sib = child.next_sibling
                 if (
                     next_sib
@@ -247,9 +248,9 @@ class MissingWhitespaceAfterComma(Rule):
                     and next_sib.column == child.column + 1
                     and next_sib.type not in (")", "]", "}")
                 ):
-                    # Next token should start at column + 2 (comma + space)
+                    # Next token should start at column + 2 (punctuation + space)
                     yield self.diagnostic_at(
-                        child.line, child.column + 1, self.message.format(char=",")
+                        child.line, child.column + 1, self.message.format(char=child.type)
                     )
 
 
