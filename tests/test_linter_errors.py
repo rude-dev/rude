@@ -51,6 +51,13 @@ class TestNonExistentFile:
         codes = [d.code for _, d in diags]
         assert "E000" in codes
 
+    def test_rust_batch_surfaces_unreadable_path(self) -> None:
+        """Rust batch_analyze_iter surfaces unreadable paths instead of dropping them."""
+        from rude._rust import batch_analyze_iter
+
+        results = list(batch_analyze_iter(["/nonexistent/__rude_test__.py"], []))
+        assert len(results) == 1, "unreadable path was silently dropped from batch results"
+
 
 # ---------------------------------------------------------------------------
 # Binary file

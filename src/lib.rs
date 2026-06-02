@@ -335,7 +335,10 @@ fn find_comment_start(line: &str) -> i32 {
 
 // ─── Streaming batch iterator ────────────────────────────────────────────────
 
-type RawResult = (String, Vec<u8>, tree_sitter::Tree, AnalysisResult);
+enum RawResult {
+    Ok(String, Vec<u8>, tree_sitter::Tree, Box<AnalysisResult>),
+    Err(String, String),
+}
 
 /// Streaming iterator over batch analysis results.
 ///
@@ -357,7 +360,7 @@ impl BatchAnalyzeIter {
         slf
     }
 
-    fn __next__(&mut self, py: Python<'_>) -> PyResult<Option<BatchAnalyzeItem>> {
+    fn __next__(&mut self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
         let receiver = match self.receiver.as_ref() {
             Some(m) => m.lock().map_err(|_| {
                 pyo3::exceptions::PyRuntimeError::new_err("batch receiver lock poisoned")
@@ -366,7 +369,8 @@ impl BatchAnalyzeIter {
         };
         loop {
             match receiver.recv_timeout(Duration::from_millis(100)) {
-                Ok((path, raw_bytes, tree, result)) => {
+                Ok(RawResult::Ok(path, raw_bytes, tree, boxed_result)) => {
+                    let mut result = *boxed_result;
                     let py_bytes = PyBytes::new(py, &raw_bytes);
                     let py_bytes_owned: Py<PyBytes> = py_bytes.clone().unbind();
                     let ptr = py_bytes.as_bytes().as_ptr();
@@ -381,14 +385,17 @@ impl BatchAnalyzeIter {
                         )),
                     };
 
-                    let mut result = result;
                     let raw_groups = result.take_groups();
                     let model = result.into_model(py)?;
 
                     let groups =
                         convert_raw_groups(py, raw_groups, &self.lang, &mut self.kind_cache)?;
 
-                    return Ok(Some((path, py_bytes_owned, ts_tree, model, groups)));
+                    let item: BatchAnalyzeItem = (path, py_bytes_owned, ts_tree, model, groups);
+                    return Ok(Some(item.into_pyobject(py)?.unbind().into_any()));
+                }
+                Ok(RawResult::Err(path, message)) => {
+                    return Ok(Some((path, message).into_pyobject(py)?.unbind().into_any()));
                 }
                 Err(mpsc::RecvTimeoutError::Timeout) => {
                     py.check_signals()?;
@@ -448,7 +455,15 @@ fn batch_analyze_iter(
                 return;
             }
 
-            let Ok(bytes) = std::fs::read(path) else { return };
+            let bytes = match std::fs::read(path) {
+                Ok(b) => b,
+                Err(e) => {
+                    if tx.send(RawResult::Err(path.clone(), e.to_string())).is_err() {
+                        cancel_clone.store(true, Ordering::Relaxed);
+                    }
+                    return;
+                }
+            };
             let tree = TL_PARSER.with(|cell| {
                 let mut borrow = cell.borrow_mut();
                 let parser = borrow.get_or_insert_with(|| {
@@ -458,12 +473,23 @@ fn batch_analyze_iter(
                 });
                 parser.parse(&bytes, None)
             });
-            let Some(tree) = tree else { return };
+            let Some(tree) = tree else {
+                if tx
+                    .send(RawResult::Err(path.clone(), "parse failed".into()))
+                    .is_err()
+                {
+                    cancel_clone.store(true, Ordering::Relaxed);
+                }
+                return;
+            };
 
             // Analyze + group in a single AST traversal (filter_set shared via Arc)
             let result = do_analyze_result(&bytes, tree.root_node(), &filter_set);
 
-            if tx.send((path.clone(), bytes, tree, result)).is_err() {
+            if tx
+                .send(RawResult::Ok(path.clone(), bytes, tree, Box::new(result)))
+                .is_err()
+            {
                 cancel_clone.store(true, Ordering::Relaxed);
             }
         });
