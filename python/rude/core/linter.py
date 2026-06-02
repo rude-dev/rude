@@ -629,7 +629,8 @@ class Linter:
                 initargs=(rule_configs, workers),
             ) as executor:
                 pending: dict[Future[list[tuple[Path, list[Diagnostic]]]], list[Path]] = {
-                    executor.submit(_check_files_worker, chunk): chunk for chunk in chunks
+                    executor.submit(_check_files_worker, chunk, options.timeout_per_file): chunk
+                    for chunk in chunks
                 }
 
                 for future in as_completed(pending):
@@ -640,7 +641,7 @@ class Linter:
                     chunk = pending[future]
 
                     try:
-                        file_results = future.result(timeout=options.timeout_per_file * len(chunk))
+                        file_results = future.result()
 
                         for path, diagnostics in file_results:
                             for diag in diagnostics:
@@ -657,18 +658,6 @@ class Linter:
                         if options.max_errors and error_count >= options.max_errors:
                             executor.shutdown(wait=False, cancel_futures=True)
                             return
-
-                    except TimeoutError:
-                        yield (
-                            chunk[0],
-                            Diagnostic(
-                                code="E002",
-                                message=f"Timeout processing chunk of {len(chunk)} files",
-                                location=Location(1, 0),
-                                severity=Severity.ERROR,
-                            ),
-                        )
-                        error_count += 1
 
                     except Exception as e:
                         if self._debug:
@@ -822,29 +811,61 @@ def _init_worker(rule_configs: list[_RuleConfig], n_workers: int = 1) -> None:
     _worker_linter = _rebuild_linter(rule_configs)
 
 
-def _check_files_worker(paths: list[Path]) -> list[tuple[Path, list[Diagnostic]]]:
-    """Worker: check a chunk of files using the streaming path."""
+def _check_files_worker(
+    paths: list[Path], timeout_per_file: float
+) -> list[tuple[Path, list[Diagnostic]]]:
+    """Worker: check each file with a per-file timeout enforced in this process."""
+    import threading
+
     if _worker_linter is None:
         raise RuntimeError("Worker linter not initialized -- _init_worker was not called")
-    try:
-        result: dict[Path, list[Diagnostic]] = {}
-        for path, diag in _worker_linter._check_files_streaming(paths):
-            result.setdefault(path, []).append(diag)
-        return list(result.items())
-    except Exception as e:
-        return [
-            (
-                paths[0],
-                [
-                    Diagnostic(
-                        code="E001",
-                        message=f"Worker crashed: {e}",
-                        location=Location(1, 0),
-                        severity=Severity.ERROR,
-                    )
-                ],
+    linter = _worker_linter
+
+    results: list[tuple[Path, list[Diagnostic]]] = []
+    for path in paths:
+        container: dict[str, Any] = {}
+
+        def run(p: Path = path, c: dict[str, Any] = container) -> None:
+            try:
+                c["diags"] = list(linter.check_file(p))
+            except Exception as e:
+                c["error"] = e
+
+        thread = threading.Thread(target=run, daemon=True)
+        thread.start()
+        thread.join(timeout_per_file)
+
+        if thread.is_alive():
+            results.append(
+                (
+                    path,
+                    [
+                        Diagnostic(
+                            code="E002",
+                            message=f"Timeout after {timeout_per_file}s",
+                            location=Location(1, 0),
+                            severity=Severity.ERROR,
+                        )
+                    ],
+                )
             )
-        ]
+        elif "error" in container:
+            results.append(
+                (
+                    path,
+                    [
+                        Diagnostic(
+                            code="E001",
+                            message=f"Worker error: {container['error']}",
+                            location=Location(1, 0),
+                            severity=Severity.ERROR,
+                        )
+                    ],
+                )
+            )
+        else:
+            results.append((path, container.get("diags", [])))
+    return results
 
 
 def _get_mp_context() -> mp.context.BaseContext:

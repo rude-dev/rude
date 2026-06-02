@@ -7,6 +7,7 @@ collects results from worker subprocesses.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -321,6 +322,116 @@ class TestMultiprocessMixedRules:
 # ---------------------------------------------------------------------------
 # Empty and single-file edge cases
 # ---------------------------------------------------------------------------
+
+
+class TestTimeoutBudget:
+    """``timeout_per_file`` should be enforced per file, not pooled across a chunk."""
+
+    def test_no_chunk_multiplier_in_source(self) -> None:
+        """The chunk-level timeout multiplier must not reappear in the source."""
+        import inspect
+
+        from rude.core import linter as linter_module
+
+        src = inspect.getsource(linter_module)
+        forbidden = "options.timeout_per_file * len(chunk)"
+        assert forbidden not in src, (
+            f"chunk-level timeout multiplier still present in linter.py: {forbidden!r}"
+        )
+
+
+class TestCheckFilesWorker:
+    """In-process tests of ``_check_files_worker`` (covers the worker path)."""
+
+    @staticmethod
+    def _init_in_process(select: list[str]) -> None:
+        from rude.core.linter import _init_worker, _RuleConfig
+
+        rules = discover_rules(select=select)
+        configs = [
+            _RuleConfig(rule_class=type(r), options=getattr(r, "__dict__", {})) for r in rules
+        ]
+        _init_worker(configs, n_workers=1)
+
+    def test_returns_diagnostics_per_file(self, tmp_path: Path) -> None:
+        from rude.core.linter import _check_files_worker
+
+        self._init_in_process(["E711"])
+        f = tmp_path / "a.py"
+        f.write_text("x = None\nif x == None:\n    pass\n")
+
+        results = _check_files_worker([f], timeout_per_file=30.0)
+        assert len(results) == 1
+        path, diags = results[0]
+        assert path == f
+        assert any(d.code == "E711" for d in diags)
+
+    def test_missing_file_yields_e000(self, tmp_path: Path) -> None:
+        from rude.core.linter import _check_files_worker
+
+        self._init_in_process(["E711"])
+        missing = tmp_path / "gone.py"
+
+        results = _check_files_worker([missing], timeout_per_file=30.0)
+        assert len(results) == 1
+        _, diags = results[0]
+        assert any(d.code == "E000" for d in diags)
+
+    def test_timeout_yields_e002(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        import time
+
+        from rude.core import linter as linter_module
+        from rude.core.linter import _check_files_worker
+
+        self._init_in_process(["E711"])
+        f = tmp_path / "slow.py"
+        f.write_text("x = 1\n")
+
+        def slow_check(self, _path: Path) -> Iterator[Diagnostic]:  # type: ignore[no-untyped-def]
+            time.sleep(0.5)
+            yield from ()
+
+        assert linter_module._worker_linter is not None
+        monkeypatch.setattr(
+            type(linter_module._worker_linter), "check_file", slow_check, raising=True
+        )
+
+        results = _check_files_worker([f], timeout_per_file=0.05)
+        assert len(results) == 1
+        _, diags = results[0]
+        assert any(d.code == "E002" for d in diags)
+
+    def test_rule_exception_yields_e001(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from rude.core import linter as linter_module
+        from rude.core.linter import _check_files_worker
+
+        self._init_in_process(["E711"])
+        f = tmp_path / "a.py"
+        f.write_text("x = 1\n")
+
+        def boom(self, _path: Path) -> Iterator[Diagnostic]:  # type: ignore[no-untyped-def]
+            raise RuntimeError("boom")
+            yield  # pragma: no cover
+
+        assert linter_module._worker_linter is not None
+        monkeypatch.setattr(type(linter_module._worker_linter), "check_file", boom, raising=True)
+
+        results = _check_files_worker([f], timeout_per_file=5.0)
+        assert len(results) == 1
+        _, diags = results[0]
+        assert any(d.code == "E001" and "boom" in d.message for d in diags)
+
+    def test_raises_when_worker_not_initialised(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        from rude.core import linter as linter_module
+        from rude.core.linter import _check_files_worker
+
+        monkeypatch.setattr(linter_module, "_worker_linter", None)
+        with pytest.raises(RuntimeError, match="not initialized"):
+            _check_files_worker([tmp_path / "a.py"], timeout_per_file=1.0)
 
 
 class TestMultiprocessEdgeCases:
