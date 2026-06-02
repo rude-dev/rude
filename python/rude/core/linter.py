@@ -344,12 +344,21 @@ class Linter:
         has_static_ast_rules = bool(base_active_by_type)
 
         str_paths = [str(p) for p in files]
-        succeeded: set[str] = set()
 
-        for path_str, source_bytes, tree, model, groups in batch_analyze_iter(
-            str_paths, filter_types
-        ):
-            succeeded.add(path_str)
+        for item in batch_analyze_iter(str_paths, filter_types):
+            if len(item) == 2:
+                err_path, message = item
+                yield (
+                    Path(err_path),
+                    Diagnostic(
+                        code="E000",
+                        message=message,
+                        location=Location(1, 0),
+                        severity=Severity.ERROR,
+                    ),
+                )
+                continue
+            path_str, source_bytes, tree, model, groups = item
             path = Path(path_str)
             ctx = FileContext.from_analysis(
                 path=path,
@@ -458,13 +467,6 @@ class Linter:
                     ctx, set(active_by_type.keys()), active_by_type, groups=groups
                 ):
                     yield (path, diag)
-
-        # Handle files that failed in batch (silently skipped by Rust)
-        for p_str in str_paths:
-            if p_str not in succeeded:
-                p = Path(p_str)
-                for d in self.check_file(p):
-                    yield (p, d)
 
     # ─────────────────────────────────────────────────────────────────────────
     # Autofix

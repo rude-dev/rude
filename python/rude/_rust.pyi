@@ -206,11 +206,16 @@ class BatchAnalyzeIter:
     """Streaming iterator for ``batch_analyze_iter``.
 
     Yields results one file at a time, allowing the caller to begin
-    processing before all files are analyzed.
+    processing before all files are analyzed. Each item is either a
+    5-tuple ``(path, source, tree, model, groups)`` on success or a
+    2-tuple ``(path, error_message)`` when the file could not be read
+    or parsed.
     """
 
     def __iter__(self) -> BatchAnalyzeIter: ...
-    def __next__(self) -> tuple[str, bytes, TSTree, SemanticModel, _GroupsDict]: ...
+    def __next__(
+        self,
+    ) -> tuple[str, bytes, TSTree, SemanticModel, _GroupsDict] | tuple[str, str]: ...
 
 def batch_analyze_iter(paths: list[str], filter_types: list[str]) -> BatchAnalyzeIter:
     """Analyze files in parallel via rayon, yielding results one at a time."""
