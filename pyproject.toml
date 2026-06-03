@@ -112,6 +112,7 @@ dev = [
     "pre-commit>=4.6.0",
     "pytest-cov>=7.1.0",
     "pytest-html>=4.2.0",
+    "diff-cover>=10.3.0",
 ]
 bench = [
     "pytest-benchmark>=5.1",

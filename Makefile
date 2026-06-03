@@ -1,9 +1,9 @@
 .DEFAULT_GOAL := check
 
 .PHONY: install build dev rust-fmt rust-lint python-fmt python-lint fmt lint \
-        typecheck test test-fast test-all bench bench-rust bench-python \
-        bench-comparative bench-save check all clean docs docs-serve \
-        docs-clean generate changelog help
+        typecheck test test-fast test-all coverage-patch bench bench-rust \
+        bench-python bench-comparative bench-save check all clean docs \
+        docs-serve docs-clean generate changelog help
 
 install:  ## Sync Python dependencies
 	uv sync
@@ -45,6 +45,10 @@ test: build  ## Run tests
 
 test-fast: dev  ## Run tests with debug build (faster iteration)
 	uv run pytest -x -q
+
+coverage-patch: build  ## Check patch coverage against main (matches codecov/patch)
+	uv run pytest -q --cov --cov-report=xml
+	uv run diff-cover coverage.xml --compare-branch=origin/main --fail-under=80
 
 bench: bench-rust bench-python  ## Run all benchmarks
 	@echo "All benchmarks complete."
