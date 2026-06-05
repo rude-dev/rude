@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## 0.1a4 -- Bug fixes and Node API ergonomics
+
+### Added
+- `Node` ergonomics helpers on the abstract `_NodeTypeMixin` contract.
+- `Node.docstring` property and import alias helpers (`iter_import_aliases`,
+  `ImportAlias`).
+- `rude.testing.assert_fix` and `assert_no_fix` accept `options` and `filename`
+  keyword arguments.
+
+### Fixed
+- F507: gate on tuple-literal right-hand side to avoid false positives on
+  dynamic format arguments.
+- E703 autofix uses byte length on UTF-8 lines so multi-byte characters no
+  longer break the replacement range.
+- `Location.column` reports character offsets instead of byte offsets, matching
+  the documented contract.
+- E231 fires on dict and annotation colons (previously skipped).
+- File finder loads nested `.gitignore` files, not just the repository root.
+- Percent format rules (E.g. F501) strip `r`/`b`/`f` string prefixes before
+  parsing.
+- Analyzer strips the string prefix when parsing `__all__` literals so prefixed
+  string entries are tracked.
+- Batch mode surfaces unreadable and unparsable files as diagnostics instead of
+  silently skipping them.
+- Worker enforces `timeout_per_file` per file (previously applied to the whole
+  batch).
+
 ## 0.1a3 -- README image rendering on PyPI
 
 ### Fixed
