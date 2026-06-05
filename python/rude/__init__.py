@@ -28,7 +28,7 @@ Example::
         Path("src/main.py").write_text(result.source)
 """
 
-__version__ = "0.1a3"
+__version__ = "0.1a4"
 
 from rude import rules
 from rude.core import (
